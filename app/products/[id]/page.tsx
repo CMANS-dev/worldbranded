@@ -15,12 +15,12 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
   // related = สินค้า category เดียวกัน ยกเว้นตัวเอง max 4
   const related = allProducts
-    .filter((p: any) => p._id !== product._id && p.category === product.category)
+    .filter((p: any) => p._id !== product._id && p.categories?.[0] === product.categories?.[0])
     .slice(0, 4)
 
   // ถ้าไม่ครบ 4 ให้เติมจาก category อื่น
   const fill = allProducts
-    .filter((p: any) => p._id !== product._id && p.category !== product.category)
+    .filter((p: any) => p._id !== product._id && p.categories?.[0] !== product.categories?.[0])
     .slice(0, 4 - related.length)
 
   return <ProductClient product={product} related={[...related, ...fill]} />

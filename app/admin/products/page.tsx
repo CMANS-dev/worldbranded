@@ -95,7 +95,7 @@ export default function AdminProducts() {
                     <p className="text-xs font-medium">{p.name}</p>
                     {p.brand && <p className="text-xs text-gray-400">{p.brand}</p>}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500 capitalize">{p.category ?? '-'}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500 capitalize">{p.categories?.join(', ') ?? '-'}</td>
                   <td className="px-4 py-3 text-xs">฿{p.price.toLocaleString()}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1 flex-wrap">

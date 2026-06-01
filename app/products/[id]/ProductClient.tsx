@@ -60,13 +60,13 @@ export default function ProductClient({ product, related }: Props) {
             {' / '}
             <Link href="/shop" className="hover:text-black transition-colors">All Products</Link>
             {' / '}
-            <span className="text-black capitalize">{product.category ?? ''}</span>
+            <span className="text-black capitalize">{product.categories?.[0] ?? ''}</span>
           </p>
 
           {product.brand && (
             <p className="font-inter text-sm text-gray-400 mb-1">{product.brand}</p>
           )}
-          <p className="font-inter text-sm text-gray-400 mb-2 capitalize">{product.category ?? ''}</p>
+          <p className="font-inter text-sm text-gray-400 mb-2 capitalize">{product.categories?.join(', ') ?? ''}</p>
           <h1 className="text-2xl md:text-3xl leading-snug mb-2">{product.name}</h1>
           <p className="font-inter text-base mb-6 md:mb-8">฿ {product.price.toLocaleString()}</p>
 
