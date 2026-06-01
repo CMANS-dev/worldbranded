@@ -9,7 +9,7 @@ interface Product {
   name: string
   slug: string
   price: number
-  category?: string
+  categories?: string[]
   inStock: boolean
   brand?: string
   images?: { url: string; alt?: string }[]
