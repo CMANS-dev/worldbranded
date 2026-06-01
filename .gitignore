@@ -4,6 +4,7 @@ node_modules/
 # next.js
 .next/
 out/
+next.zip
 
 # env files — ห้าม push ขึ้น GitHub เด็ดขาด
 .env
