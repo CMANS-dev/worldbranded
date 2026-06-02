@@ -5,11 +5,16 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // ใช้ x-forwarded-host ถ้ามี (เมื่ออยู่หลัง proxy)
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host
+  const proto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '')
+  const baseUrl = `${proto}://${host}`
+
   // ป้องกัน /admin — ต้องมี admin cookie
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const token = req.cookies.get('admin_token')?.value
     if (token !== process.env.ADMIN_SECRET) {
-      return NextResponse.redirect(new URL('/admin/login', req.url))
+      return NextResponse.redirect(`${baseUrl}/admin/login`)
     }
   }
 
@@ -17,7 +22,7 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith('/profile')) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
     if (!token) {
-      return NextResponse.redirect(new URL('/account', req.url))
+      return NextResponse.redirect(`${baseUrl}/account`)
     }
   }
 
@@ -27,3 +32,4 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: ['/admin/:path*', '/profile/:path*'],
 }
+
