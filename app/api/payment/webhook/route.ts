@@ -61,38 +61,24 @@ export async function POST(req: Request) {
     else if (aml_status === 'Rejected') orderStatus = 'failed'
     else if (aml_status === 'Pending') orderStatus = 'aml_pending'
 
-    // หา order จาก ref1 (ที่เราส่งไปตอนสร้าง QR)
-    const order = await prisma.order.findFirst({
-      where: { ref1 },
-    })
+    // หา order จาก ref1 แล้ว update status
+    const order = await prisma.order.findFirst({ where: { ref1 } })
 
+    let updated
     if (order) {
-      const updated = await prisma.order.update({
+      updated = await prisma.order.update({
         where: { id: order.id },
         data: {
           status: orderStatus,
           transId: trans_id ?? order.transId,
-          paidAt: aml_status === 'Approved' ? new Date() : null,
+          paidAt: aml_status === 'Approved' ? new Date() : order.paidAt,
         },
       })
       console.log(`✅ Order ${updated.orderRef} updated → ${orderStatus}`)
-
-      // แจ้งเตือน Telegram
-      await sendTelegram(orderNotifyMessage({
-        orderRef: updated.orderRef,
-        customerName: updated.customerName,
-        total: updated.total,
-        amount: updated.amount,
-        deliveryFee: updated.deliveryFee,
-        status: orderStatus,
-        amlStatus: aml_status,
-        transId: trans_id,
-        items: updated.items,
-      }))
     } else {
-      // ไม่พบ order — สร้างใหม่จาก callback data
+      // fallback กรณี webhook มาก่อน QR modal เซฟ order (ไม่ควรเกิด แต่ safety net)
       console.warn(`⚠️ Order not found for ref1=${ref1}, creating from callback`)
-      await prisma.order.create({
+      updated = await prisma.order.create({
         data: {
           orderRef: `CB-${ref1}`,
           transId: trans_id,
@@ -107,6 +93,19 @@ export async function POST(req: Request) {
         },
       })
     }
+
+    // แจ้งเตือน Telegram
+    await sendTelegram(orderNotifyMessage({
+      orderRef: updated.orderRef,
+      customerName: updated.customerName,
+      customerEmail: updated.customerEmail ?? undefined,
+      total: updated.total,
+      amount: updated.amount,
+      deliveryFee: updated.deliveryFee,
+      status: orderStatus,
+      transId: trans_id,
+      ref1: updated.ref1 ?? undefined,
+    }))
 
     // ต้อง response กลับแบบนี้เสมอ ไม่งั้น 12Group จะ retry
     return NextResponse.json({ code: 200, Message: 'Success' })

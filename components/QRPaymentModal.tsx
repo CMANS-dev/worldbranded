@@ -41,33 +41,39 @@ export default function QRPaymentModal({
   const inquiredRef = useRef(false) // ยิง inquiry แค่ครั้งเดียว
   const ref1Ref = useRef<string>('')
 
-  const saveOrder = async (txId: string, orderStatus: string) => {
+  const orderPayload = {
+    orderRef: orderId,
+    ref1: ref1Ref.current,
+    amount,
+    deliveryFee,
+    total: total ?? amount + deliveryFee,
+    customerName,
+    customerEmail,
+    phone,
+    address1: address?.address1,
+    address2: address?.address2,
+    city: address?.city,
+    region: address?.region,
+    postal: address?.postal,
+    items,
+  }
+
+  // เซฟ order หรือ update status ถ้ามีอยู่แล้ว
+  const upsertOrder = async (txId: string | null, orderStatus: string, paidAt?: string | null) => {
     try {
-      await fetch('/api/orders', {
+      await fetch('/api/orders/upsert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderRef: orderId,
-          transId: txId,
+          ...orderPayload,
           ref1: ref1Ref.current,
+          transId: txId,
           status: orderStatus,
-          amount,
-          deliveryFee,
-          total: total ?? amount + deliveryFee,
-          customerName,
-          customerEmail,
-          phone,
-          address1: address?.address1,
-          address2: address?.address2,
-          city: address?.city,
-          region: address?.region,
-          postal: address?.postal,
-          items,
-          paidAt: orderStatus === 'paid' ? new Date().toISOString() : null,
+          paidAt: paidAt ?? null,
         }),
       })
     } catch (e) {
-      console.error('Save order error:', e)
+      console.error('Upsert order error:', e)
     }
   }
 
@@ -82,7 +88,7 @@ export default function QRPaymentModal({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            amount: total ?? (amount + deliveryFee), // ส่งยอดรวมค่าส่ง
+            amount: total ?? (amount + deliveryFee),
             ref1,
             ref3: customerName,
             orderId,
@@ -95,12 +101,15 @@ export default function QRPaymentModal({
           return
         }
 
-        // ดึงข้อมูลจาก data object ของ gateway
         const payload = data.data ?? data
-        setTransId(payload.trans_id)
+        const txId = payload.trans_id ?? null
+        setTransId(txId)
         const img = payload.code_image ?? null
         setQrImage(img ? `data:image/png;base64,${img}` : null)
         setStatus('pending')
+
+        // ✅ เซฟ order ทันทีที่ QR ถูกสร้าง — status: pending
+        await upsertOrder(txId, 'pending', null)
       } catch {
         setStatus('error')
       }
@@ -108,29 +117,27 @@ export default function QRPaymentModal({
     createQR()
   }, [amount, customerName, orderId])
 
-  // Countdown timer — เมื่อครบ 5 นาที ยิง inquiry 1 ครั้ง
+  // Countdown timer — เมื่อครบ 5 นาที ยิง inquiry 1 ครั้ง (fallback กรณี webhook ไม่มา)
   useEffect(() => {
     if (status !== 'pending') return
     if (timeLeft <= 0) {
-      // ครบเวลา — ยิง inquiry ครั้งเดียว
       if (!inquiredRef.current && transId) {
         inquiredRef.current = true
         fetch(`/api/payment/inquiry?trans_id=${transId}`)
           .then((r) => r.json())
           .then(async (data) => {
-            // ใช้ paid field ที่ API เพิ่มให้
             const paid = data.paid === true
             if (paid) {
-              await saveOrder(transId, 'paid')
+              await upsertOrder(transId, 'paid', new Date().toISOString())
               setStatus('success')
               onSuccess(transId)
             } else {
-              await saveOrder(transId, 'failed')
+              await upsertOrder(transId, 'failed', null)
               setStatus('failed')
             }
           })
           .catch(async () => {
-            await saveOrder(transId, 'failed')
+            await upsertOrder(transId, 'failed', null)
             setStatus('failed')
           })
       }
