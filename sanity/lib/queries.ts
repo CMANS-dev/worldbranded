@@ -50,6 +50,17 @@ export const PRODUCT_BY_SLUG_QUERY = defineQuery(`
   }
 `)
 
+// ── Shipping Methods ──────────────────────────────────────────────────────
+export const SHIPPING_QUERY = defineQuery(`
+  *[_type == "shipping" && isActive == true] | order(order asc) {
+    _id,
+    name,
+    description,
+    price,
+    estimatedDays,
+  }
+`)
+
 // ── Promo Banners ─────────────────────────────────────────────────────────
 export const PROMO_BANNERS_QUERY = defineQuery(`
   *[_type == "promoBanner"] | order(order asc) {

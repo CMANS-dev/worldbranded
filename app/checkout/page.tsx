@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
@@ -9,14 +9,32 @@ import Navbar from '@/components/Navbar'
 import { useCart } from '@/context/CartContext'
 import QRPaymentModal from '@/components/QRPaymentModal'
 
-const DELIVERY_FEE = 150
+interface ShippingMethod {
+  _id: string
+  name: string
+  description?: string
+  price: number
+  estimatedDays?: string
+}
 
 export default function CheckoutPage() {
   const { items, subtotal } = useCart()
-  const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0)
-
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
+  const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null)
+
+  useEffect(() => {
+    fetch('/api/shipping')
+      .then(r => r.json())
+      .then((data: ShippingMethod[]) => {
+        setShippingMethods(data)
+        if (data.length > 0) setSelectedShipping(data[0])
+      })
+  }, [])
+
+  const DELIVERY_FEE = selectedShipping?.price ?? 0
+  const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0)
   const [showQR, setShowQR] = useState(false)
   const [orderId] = useState(() => `ORD-${Date.now()}`)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
@@ -219,18 +237,29 @@ export default function CheckoutPage() {
                 {/* Shipping method */}
                 <div className="pt-4">
                   <p className="font-inter text-sm text-gray-600 mb-3">Select Shipping Method</p>
-                  <label className="flex items-center justify-between border border-black rounded-sm px-4 py-3 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <span className="w-4 h-4 rounded-full border-2 border-black flex items-center justify-center">
-                        <span className="w-2 h-2 rounded-full bg-black" />
-                      </span>
-                      <div>
-                        <p className="font-inter text-sm">Same day delivery</p>
-                        <p className="font-inter text-xs text-gray-400">Rider delivery (excl. weekends and bank holidays)</p>
-                      </div>
-                    </div>
-                    <span className="font-inter text-sm">฿{DELIVERY_FEE.toLocaleString()}</span>
-                  </label>
+                  <div className="space-y-2">
+                    {shippingMethods.length === 0 ? (
+                      <p className="font-inter text-xs text-gray-400">กำลังโหลด...</p>
+                    ) : shippingMethods.map((method) => (
+                      <label
+                        key={method._id}
+                        onClick={() => setSelectedShipping(method)}
+                        className={`flex items-center justify-between border rounded-sm px-4 py-3 cursor-pointer transition-colors ${selectedShipping?._id === method._id ? 'border-black' : 'border-gray-200 hover:border-gray-400'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-4 h-4 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0">
+                            {selectedShipping?._id === method._id && <span className="w-2 h-2 rounded-full bg-black" />}
+                          </span>
+                          <div>
+                            <p className="font-inter text-sm">{method.name}</p>
+                            {method.description && <p className="font-inter text-xs text-gray-400">{method.description}</p>}
+                            {method.estimatedDays && <p className="font-inter text-xs text-gray-400">{method.estimatedDays}</p>}
+                          </div>
+                        </div>
+                        <span className="font-inter text-sm">฿{method.price.toLocaleString()}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <button
