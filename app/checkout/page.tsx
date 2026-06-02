@@ -5,9 +5,16 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
 import { useCart } from '@/context/CartContext'
 import QRPaymentModal from '@/components/QRPaymentModal'
+
+interface SavedAddress {
+  id: string; name: string; firstName: string; lastName: string
+  phone: string; address1: string; address2?: string
+  city: string; region?: string; postal: string
+}
 
 interface ShippingMethod {
   _id: string
@@ -20,9 +27,13 @@ interface ShippingMethod {
 export default function CheckoutPage() {
   const { items, subtotal } = useCart()
   const router = useRouter()
+  const { data: session } = useSession()
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([])
   const [selectedShipping, setSelectedShipping] = useState<ShippingMethod | null>(null)
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [useNewAddress, setUseNewAddress] = useState(false)
 
   useEffect(() => {
     fetch('/api/shipping')
@@ -32,6 +43,18 @@ export default function CheckoutPage() {
         if (data.length > 0) setSelectedShipping(data[0])
       })
   }, [])
+
+  useEffect(() => {
+    if (!session?.user) return
+    fetch('/api/addresses')
+      .then(r => r.json())
+      .then((data: SavedAddress[]) => {
+        setSavedAddresses(data)
+        if (data.length > 0) setSelectedAddressId(data[0].id)
+        else setUseNewAddress(true)
+      })
+      .catch(() => setUseNewAddress(true))
+  }, [session])
 
   const DELIVERY_FEE = selectedShipping?.price ?? 0
   const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0)
@@ -53,10 +76,19 @@ export default function CheckoutPage() {
   }
 
   const validate = () => {
+    if (!useNewAddress && selectedAddressId) return true
     const errs: Record<string, string> = {}
     required.forEach((k) => { if (!form[k as keyof typeof form].trim()) errs[k] = 'This field is required.' })
     setErrors(errs)
     return Object.keys(errs).length === 0
+  }
+
+  const getActiveAddress = () => {
+    if (!useNewAddress && selectedAddressId) {
+      const a = savedAddresses.find(x => x.id === selectedAddressId)
+      if (a) return { firstName: a.firstName, lastName: a.lastName, phone: a.phone, address1: a.address1, address2: a.address2 ?? '', city: a.city, region: a.region ?? '', postal: a.postal, company: '' }
+    }
+    return form
   }
 
   const handleContinue = () => {
@@ -113,6 +145,41 @@ export default function CheckoutPage() {
 
             {step === 1 && (
               <div className="space-y-5">
+
+                {/* Saved addresses selector */}
+                {session?.user && savedAddresses.length > 0 && (
+                  <div className="space-y-2 pb-2">
+                    <p className="font-inter text-sm text-gray-600 mb-2">ที่อยู่ที่บันทึกไว้</p>
+                    {savedAddresses.map((a) => (
+                      <label
+                        key={a.id}
+                        onClick={() => { setSelectedAddressId(a.id); setUseNewAddress(false) }}
+                        className={`flex items-start gap-3 border rounded-sm px-4 py-3 cursor-pointer transition-colors ${!useNewAddress && selectedAddressId === a.id ? 'border-black' : 'border-gray-200'}`}
+                      >
+                        <span className="w-4 h-4 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {!useNewAddress && selectedAddressId === a.id && <span className="w-2 h-2 rounded-full bg-black" />}
+                        </span>
+                        <div>
+                          <p className="font-inter text-sm font-medium">{a.name}</p>
+                          <p className="font-inter text-xs text-gray-400">{a.firstName} {a.lastName} · {a.phone}</p>
+                          <p className="font-inter text-xs text-gray-400">{a.address1}, {a.city} {a.postal}</p>
+                        </div>
+                      </label>
+                    ))}
+                    <label
+                      onClick={() => setUseNewAddress(true)}
+                      className={`flex items-center gap-3 border rounded-sm px-4 py-3 cursor-pointer transition-colors ${useNewAddress ? 'border-black' : 'border-gray-200'}`}
+                    >
+                      <span className="w-4 h-4 rounded-full border-2 border-black flex items-center justify-center flex-shrink-0">
+                        {useNewAddress && <span className="w-2 h-2 rounded-full bg-black" />}
+                      </span>
+                      <span className="font-inter text-sm">ใช้ที่อยู่ใหม่</span>
+                    </label>
+                  </div>
+                )}
+
+                {/* Show form only if no saved address or chose new */}
+                {(useNewAddress || !session?.user || savedAddresses.length === 0) && <>
                 {/* First Name */}
                 <div>
                   <label className={`block font-inter text-sm mb-1 ${errors.firstName ? 'text-red-500' : 'text-gray-600'}`}>
@@ -261,6 +328,8 @@ export default function CheckoutPage() {
                     ))}
                   </div>
                 </div>
+
+                </> }
 
                 <button
                   onClick={handleContinue}
@@ -434,7 +503,7 @@ export default function CheckoutPage() {
           amount={subtotal}
           deliveryFee={items.length > 0 ? DELIVERY_FEE : 0}
           total={total}
-          customerName={`${form.firstName} ${form.lastName}`}
+          customerName={`${getActiveAddress().firstName} ${getActiveAddress().lastName}`}
           phone={form.phone}
           address={{
             address1: form.address1,

@@ -1,16 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+interface Address {
+  id: string; name: string; firstName: string; lastName: string
+  phone: string; company?: string; address1: string; address2?: string
+  city: string; region?: string; postal: string
+  isDefaultShipping: boolean; isDefaultBilling: boolean
+}
+
+const emptyForm = {
+  name: '', firstName: '', lastName: '', phone: '',
+  company: '', address1: '', address2: '', city: '', region: '', postal: '',
+  isDefaultShipping: false, isDefaultBilling: false,
+}
 
 export default function AddressBookPage() {
+  const [addresses, setAddresses] = useState<Address[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({
-    name: '', firstName: '', lastName: '', phone: '',
-    company: '', address1: '', address2: '', city: '', region: '', postal: '',
-    isDefaultShipping: false, isDefaultBilling: false,
-  })
+  const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  useEffect(() => {
+    fetch('/api/addresses').then(r => r.json()).then(setAddresses)
+  }, [])
 
   const set = (k: keyof typeof form, v: any) => setForm(f => ({ ...f, [k]: v }))
+
+  const save = async () => {
+    if (!form.name || !form.firstName || !form.lastName || !form.address1 || !form.city || !form.postal) {
+      setMsg('กรุณากรอกข้อมูลที่จำเป็น'); return
+    }
+    setSaving(true)
+    const res = await fetch('/api/addresses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+    setSaving(false)
+    if (res.ok) {
+      const data = await res.json()
+      setAddresses(prev => [data.address, ...prev])
+      setShowForm(false)
+      setForm(emptyForm)
+      setMsg('')
+    } else {
+      setMsg('เกิดข้อผิดพลาด ลองใหม่อีกครั้ง')
+    }
+  }
 
   return (
     <div className="max-w-lg">
@@ -24,9 +62,33 @@ export default function AddressBookPage() {
         )}
       </div>
 
-      {!showForm ? (
-        <p className="font-inter text-sm text-gray-400">ยังไม่มีที่อยู่ที่บันทึกไว้</p>
-      ) : (
+      {/* รายการที่อยู่ */}
+      {!showForm && (
+        <div className="space-y-3 mb-6">
+          {addresses.length === 0 ? (
+            <p className="font-inter text-sm text-gray-400">ยังไม่มีที่อยู่ที่บันทึกไว้</p>
+          ) : addresses.map((a) => (
+            <div key={a.id} className="border border-gray-100 rounded-sm p-4">
+              <p className="font-inter text-sm font-medium">{a.name}</p>
+              <p className="font-inter text-xs text-gray-500 mt-1">
+                {a.firstName} {a.lastName} · {a.phone}
+              </p>
+              <p className="font-inter text-xs text-gray-500">
+                {a.address1}{a.address2 ? `, ${a.address2}` : ''}, {a.city} {a.postal}
+              </p>
+              {(a.isDefaultShipping || a.isDefaultBilling) && (
+                <div className="flex gap-2 mt-2">
+                  {a.isDefaultShipping && <span className="font-inter text-xs bg-gray-100 px-2 py-0.5 rounded-full">Default Shipping</span>}
+                  {a.isDefaultBilling && <span className="font-inter text-xs bg-gray-100 px-2 py-0.5 rounded-full">Default Billing</span>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Form */}
+      {showForm && (
         <div>
           <h2 className="font-inter text-sm font-medium tracking-widest uppercase mb-6">ADD NEW ADDRESS</h2>
           <div className="space-y-4">
@@ -43,7 +105,6 @@ export default function AddressBookPage() {
               </div>
             ))}
 
-            {/* Phone */}
             <div>
               <label className="block font-inter text-xs text-gray-500 mb-1">Phone Number *</label>
               <div className="flex items-center gap-2 border-b border-gray-200 py-1.5">
@@ -106,11 +167,14 @@ export default function AddressBookPage() {
               ))}
             </div>
 
+            {msg && <p className="font-inter text-xs text-red-500">{msg}</p>}
+
             <div className="flex gap-3 pt-2">
-              <button className="font-inter text-xs bg-black text-white px-6 py-2.5 rounded-full hover:bg-gray-800 transition-colors">
-                Save Address
+              <button onClick={save} disabled={saving}
+                className="font-inter text-xs bg-black text-white px-6 py-2.5 rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50">
+                {saving ? 'กำลังบันทึก...' : 'Save Address'}
               </button>
-              <button onClick={() => setShowForm(false)}
+              <button onClick={() => { setShowForm(false); setMsg('') }}
                 className="font-inter text-xs border border-black px-6 py-2.5 rounded-full hover:bg-gray-50 transition-colors">
                 Cancel
               </button>
