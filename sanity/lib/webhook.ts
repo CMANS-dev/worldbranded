@@ -21,8 +21,8 @@ export async function isValidSignature(
   )
 
   // Sanity ส่ง signature เป็น hex string
-  const sigBuffer = hexToUint8Array(signature)
-  const bodyBuffer = encoder.encode(body)
+  const sigBuffer = hexToUint8Array(signature).buffer as ArrayBuffer
+  const bodyBuffer = encoder.encode(body).buffer as ArrayBuffer
 
   return crypto.subtle.verify('HMAC', key, sigBuffer, bodyBuffer)
 }
