@@ -5,5 +5,5 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: true, // false เมื่อต้องการข้อมูลล่าสุด เช่น ตอน build
+  useCdn: false, // ดึงข้อมูลล่าสุดตลอด
 })
