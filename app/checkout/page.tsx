@@ -364,7 +364,7 @@ export default function CheckoutPage() {
                       <span className="w-2 h-2 rounded-full bg-black" />
                     </span>
                     <div>
-                      <p className="font-inter text-sm">PromptPay QR</p>
+                      <p className="font-inter text-sm">QR PromptPay</p>
                       <p className="font-inter text-xs text-gray-400">สแกน QR ผ่านแอปธนาคาร</p>
                     </div>
                   </div>
@@ -482,7 +482,7 @@ export default function CheckoutPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-gray-100 px-8 py-6">
+      {/* <footer className="border-t border-gray-100 px-8 py-6">
         <div className="flex items-center justify-center gap-8 text-xs font-inter text-gray-400 mb-4">
           <a href="#" className="hover:text-black transition-colors">Shipping</a>
           <a href="#" className="hover:text-black transition-colors">Returns &amp; Refunds</a>
@@ -494,7 +494,7 @@ export default function CheckoutPage() {
           <span className="font-inter text-xs text-gray-300">·</span>
           <span className="font-inter text-xs text-gray-300">VISA · Mastercard · AMEX · Apple Pay · PayPal</span>
         </div>
-      </footer>
+      </footer> */}
 
       <Footer />
 

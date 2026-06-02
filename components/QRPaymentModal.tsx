@@ -148,9 +148,9 @@ export default function QRPaymentModal({
       <div className="bg-white w-full max-w-sm mx-4 relative">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="font-serif text-xl">PromptPay QR</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-black transition-colors">
+        <div className="flex items-center justify-between px-6 py-5 bg-black">
+          <h2 className="font-serif text-xl text-white">QR Promptpay</h2>
+          <button onClick={onClose} className="text-white hover:opacity-60 transition-opacity">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" strokeWidth="1.4"/>
             </svg>
@@ -171,7 +171,7 @@ export default function QRPaymentModal({
           {status === 'pending' && (
             <>
               <p className="font-inter text-sm text-gray-500 mb-1">ยอดชำระ</p>
-              <p className="font-serif text-3xl mb-4">฿{amount.toLocaleString()}</p>
+              <p className="font-serif text-3xl mb-4">฿{(total ?? amount + deliveryFee).toLocaleString()}</p>
 
               {qrImage ? (
                 <div className="w-64 h-64 mx-auto mb-4">
@@ -195,6 +195,21 @@ export default function QRPaymentModal({
                 <div className="w-2 h-2 bg-black rounded-full animate-pulse" />
                 <p className="font-inter text-xs text-gray-400">รอการชำระเงิน...</p>
               </div>
+
+              {/* ปุ่มบันทึก QR */}
+              {qrImage && (
+                <a
+                  href={qrImage}
+                  download="QR-Promptpay.png"
+                  className="mt-5 w-full bg-black text-white font-inter text-sm py-3 flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 1v9M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 12v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  บันทึกรูป QR Code
+                </a>
+              )}
             </>
           )}
 
