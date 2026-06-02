@@ -36,8 +36,12 @@ export const ON_SALE_QUERY = defineQuery(`
 
 // ── All Products (with optional category filter) ──────────────────────────
 export const ALL_PRODUCTS_QUERY = defineQuery(`
-  *[_type == "product" && inStock == true
-    && ($category == "" || $category in categories)]
+  *[
+    _type == "product" &&
+    !(_id in path("drafts.**")) &&
+    inStock == true &&
+    ($category == "" || $category in categories)
+  ]
   | order(_createdAt desc) {
     ${productProjection}
   }
@@ -45,7 +49,12 @@ export const ALL_PRODUCTS_QUERY = defineQuery(`
 
 // ── Single Product by slug ────────────────────────────────────────────────
 export const PRODUCT_BY_SLUG_QUERY = defineQuery(`
-  *[_type == "product" && slug.current == $slug][0] {
+  *[
+    _type == "product" &&
+    !(_id in path("drafts.**")) &&
+    slug.current == $slug &&
+    inStock == true
+  ][0] {
     ${productProjection}
   }
 `)

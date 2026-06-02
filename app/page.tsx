@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic' // ไม่ cache — fetch ใหม่
 
 export default async function Home() {
   const [newArrivals, onSale] = await Promise.all([
-    client.fetch(NEW_ARRIVALS_QUERY),
-    client.fetch(ON_SALE_QUERY),
+    client.fetch(NEW_ARRIVALS_QUERY, {}, { next: { tags: ['products'] } }),
+    client.fetch(ON_SALE_QUERY, {}, { next: { tags: ['products'] } }),
   ])
 
   return (
