@@ -51,7 +51,7 @@ function SignInForm() {
     if (res?.error) {
       setError('Email or password is incorrect.')
     } else {
-      router.push('/')
+      router.push('/profile')
     }
   }
 
@@ -121,7 +121,18 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
     setLoading(false)
 
     if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-    onSuccess()
+
+    // auto login แล้ว redirect ไป profile
+    const loginRes = await signIn('credentials', {
+      email: form.email,
+      password: form.password,
+      redirect: false,
+    })
+    if (loginRes?.ok) {
+      onSuccess()
+    } else {
+      onSuccess() // สลับไป Sign In ให้ login เอง
+    }
   }
 
   return (
@@ -192,6 +203,7 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function AccountPage() {
   const [tab, setTab] = useState<Tab>('signin')
+  const router = useRouter()
 
   return (
     <div className="min-h-screen bg-white">
@@ -224,7 +236,7 @@ export default function AccountPage() {
           <div className="pb-20">
             {tab === 'signin'
               ? <SignInForm />
-              : <RegisterForm onSuccess={() => setTab('signin')} />
+              : <RegisterForm onSuccess={() => router.push('/profile')} />
             }
           </div>
         </div>

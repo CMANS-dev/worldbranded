@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { EB_Garamond, Inter } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/context/CartContext'
+import { WishlistProvider } from '@/context/WishlistContext'
 import CartDrawer from '@/components/CartDrawer'
 import SessionWrapper from '@/components/SessionWrapper'
 
@@ -30,10 +31,12 @@ export default function RootLayout({
     <html lang="th">
       <body className={`${ebGaramond.variable} ${inter.variable} font-serif antialiased bg-white text-black`}>
         <SessionWrapper>
-          <CartProvider>
-            <CartDrawer />
-            {children}
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <CartDrawer />
+              {children}
+            </CartProvider>
+          </WishlistProvider>
         </SessionWrapper>
       </body>
     </html>

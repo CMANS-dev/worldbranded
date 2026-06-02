@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import ProductCard from '@/components/ProductCard'
 import Footer from '@/components/Footer'
 import { useCart } from '@/context/CartContext'
+import { useWishlist } from '@/context/WishlistContext'
 import { SanityProduct } from '@/components/ProductSection'
 
 interface Props {
@@ -18,8 +19,10 @@ const infoRows = ['Product details', 'Size']
 
 export default function ProductClient({ product, related }: Props) {
   const { addItem } = useCart()
+  const { toggleItem, isWishlisted } = useWishlist()
   const [openRow, setOpenRow] = useState<string | null>(null)
   const images = product.images ?? []
+  const wishlisted = isWishlisted(product._id)
 
   return (
     <main className="min-h-screen pt-14">
@@ -72,8 +75,21 @@ export default function ProductClient({ product, related }: Props) {
 
           {/* CTA */}
           <div className="flex gap-3 mb-8 md:mb-10">
-            <button className="font-inter border border-black rounded-full px-5 md:px-6 py-2 text-sm hover:bg-gray-50 transition-colors">
-              Wishlist
+            <button
+              onClick={() => toggleItem({
+                id: product._id,
+                name: product.name,
+                price: product.price,
+                slug: product.slug,
+                image: images[0]?.url,
+              })}
+              className={`font-inter rounded-full px-5 md:px-6 py-2 text-sm transition-colors ${
+                wishlisted
+                  ? 'bg-black text-white hover:bg-gray-800'
+                  : 'border border-black hover:bg-gray-50'
+              }`}
+            >
+              {wishlisted ? '♥ Wishlisted' : 'Wishlist'}
             </button>
             <button
               onClick={() => addItem({

@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { openCart, totalCount } = useCart()
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60)
@@ -41,8 +43,15 @@ export default function Navbar() {
 
           {/* Desktop nav links */}
           <div className="hidden md:flex gap-6 text-lg items-baseline">
-            <a href="/shop" className="hover:opacity-50 transition-opacity">Shop</a>
-            <a href="/account" className="hover:opacity-50 transition-opacity">Profile</a>
+            {[{ label: 'Shop', href: '/shop' }, { label: 'Profile', href: '/profile' }].map(({ label, href }) => {
+              const active = pathname.startsWith(href)
+              return (
+                <a key={href} href={href}
+                  className={`relative hover:opacity-50 transition-opacity pb-0.5 ${active ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-black' : ''}`}>
+                  {label}
+                </a>
+              )
+            })}
             <button onClick={openCart} className="hover:opacity-50 transition-opacity relative">
               Bag{totalCount > 0 && <sup className="font-inter text-xs ml-0.5">{totalCount}</sup>}
             </button>

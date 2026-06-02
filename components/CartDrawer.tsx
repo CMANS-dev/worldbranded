@@ -113,9 +113,6 @@ export default function CartDrawer() {
           >
             Secure Checkout
           </button>
-          <button className="w-full border border-black font-inter text-sm py-3 rounded-full hover:bg-gray-50 transition-colors tracking-wide">
-            View Bag Details
-          </button>
         </div>
       </div>
     </>
