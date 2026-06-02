@@ -149,7 +149,7 @@ export default function QRPaymentModal({
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 bg-black">
-          <h2 className="font-serif text-xl text-white">QR Promptpay</h2>
+          <h2 className="font-serif text-xl text-white">QR PromptPay</h2>
           <button onClick={onClose} className="text-white hover:opacity-60 transition-opacity">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" strokeWidth="1.4"/>
