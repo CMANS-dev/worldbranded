@@ -8,7 +8,7 @@ export default async function ShopPage() {
   const products = await client.fetch(
     ALL_PRODUCTS_QUERY,
     { category: '' },
-    { next: { tags: ['products'] } },
+    { cache: 'no-store' },
   )
 
   return <ShopClient products={products} />
