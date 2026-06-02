@@ -41,11 +41,13 @@ export async function POST(req: Request) {
     await sendTelegram(orderNotifyMessage({
       orderRef: order.orderRef,
       customerName: order.customerName,
+      customerEmail: order.customerEmail ?? undefined,
       total: order.total,
       amount: order.amount,
       deliveryFee: order.deliveryFee,
       status: order.status,
       transId: order.transId ?? undefined,
+      ref1: order.ref1 ?? undefined,
       items: order.items,
     }))
 
