@@ -67,8 +67,8 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
             <p className="font-inter text-xs font-medium text-gray-500 mb-3">NEED ASSISTANCE?</p>
             <div className="space-y-2 font-inter text-xs text-gray-500">
               <div className="flex items-center gap-2">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1.5h2l1 3-1.5 1a8 8 0 0 0 4 4l1-1.5 3 1V11a1 1 0 0 1-1 1C4 12 0 8 0 2.5A1 1 0 0 1 1 1.5Z" stroke="currentColor" strokeWidth="1"/></svg>
-                <span>+66 2 123 4567</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1C3.24 1 1 3.02 1 5.5c0 1.55.82 2.92 2.07 3.77L2.5 11l2.1-1.1A5.3 5.3 0 0 0 6 10c2.76 0 5-2.02 5-4.5S8.76 1 6 1Z" stroke="currentColor" strokeWidth="1"/></svg>
+                <a href="https://line.me/ti/p/~@970bnchf" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">Line OA: @970bnchf</a>
               </div>
               <p className="text-gray-400">Monday to Friday, 10:00 — 20:00</p>
               <a href="mailto:hello@worldbranded.com" className="underline underline-offset-2 hover:text-black transition-colors block">

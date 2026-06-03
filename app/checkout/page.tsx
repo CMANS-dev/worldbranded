@@ -154,12 +154,7 @@ export default function CheckoutPage() {
           </svg>
           Secure Checkout
         </div>
-        <div className="flex items-center gap-2 text-sm font-inter text-gray-500">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 2h2.5l1 3-1.5 1a9 9 0 0 0 4 4l1-1.5 3 1V12a1 1 0 0 1-1 1C5 13 1 9 1 3a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.2"/>
-          </svg>
-          +66 2 123 4567
-        </div>
+        <div />
       </header>
 
       {/* ── Back button ── */}
@@ -563,7 +558,7 @@ export default function CheckoutPage() {
               </button>
               {openAccordion === label && (
                 <div className="pb-4 font-inter text-xs text-gray-400">
-                  {label === 'Need Assistance?' ? 'Contact us at hello@worldbranded.com or call +66 2 123 4567.' : 'Visit our FAQ page for common questions about orders, shipping, and returns.'}
+                  {label === 'Need Assistance?' ? <>Contact us at hello@worldbranded.com or Line OA: <a href="https://line.me/ti/p/~@970bnchf" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-black transition-colors">@970bnchf</a></> : 'Visit our FAQ page for common questions about orders, shipping, and returns.'}
                 </div>
               )}
             </div>
