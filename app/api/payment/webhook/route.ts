@@ -80,6 +80,7 @@ export async function POST(req: Request) {
       console.warn(`⚠️ Order not found for ref1=${ref1}, creating from callback`)
       updated = await prisma.order.create({
         data: {
+          id: `ord_${Date.now()}`,
           orderRef: `CB-${ref1}`,
           transId: trans_id,
           ref1,
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
           total: amount ?? 0,
           customerName: cusname ?? '',
           items: '[]',
+          updatedAt: new Date(),
           paidAt: aml_status === 'Approved' ? new Date() : null,
         },
       })
