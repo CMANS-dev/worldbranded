@@ -558,7 +558,7 @@ export default function CheckoutPage() {
               </button>
               {openAccordion === label && (
                 <div className="pb-4 font-inter text-xs text-gray-400">
-                  {label === 'Need Assistance?' ? <>Contact us at hello@worldbranded.com or Line OA: <a href="https://line.me/ti/p/~@970bnchf" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-black transition-colors">@970bnchf</a></> : 'Visit our FAQ page for common questions about orders, shipping, and returns.'}
+                  {label === 'Need Assistance?' ? <>Contact us at Line OA: <a href="https://line.me/ti/p/~@970bnchf" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-black transition-colors">worldbranded</a></> : 'Visit our FAQ page for common questions about orders, shipping, and returns.'}
                 </div>
               )}
             </div>
