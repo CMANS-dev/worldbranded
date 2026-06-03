@@ -32,6 +32,8 @@ model order {
   status        String    @default("pending")
   amount        Float
   deliveryFee   Float     @default(0)
+  discountAmount Float    @default(0)
+  couponCode    String?
   total         Float
   customerName  String
   customerEmail String?

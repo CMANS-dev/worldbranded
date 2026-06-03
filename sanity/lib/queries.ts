@@ -77,6 +77,9 @@ export const PROMO_BANNERS_QUERY = defineQuery(`
     title,
     layout,
     link,
-    "image": image.asset->url
+    linkLeft,
+    linkRight,
+    "image": image.asset->url,
+    "imageRight": imageRight.asset->url
   }
 `)

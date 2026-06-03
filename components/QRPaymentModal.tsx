@@ -14,6 +14,8 @@ interface CartItem {
 interface Props {
   amount: number
   deliveryFee?: number
+  discountAmount?: number
+  couponCode?: string
   total?: number
   customerName: string
   customerEmail?: string
@@ -31,7 +33,8 @@ interface Props {
 type Status = 'loading' | 'pending' | 'success' | 'failed' | 'error'
 
 export default function QRPaymentModal({
-  amount, deliveryFee = 0, total, customerName, customerEmail,
+  amount, deliveryFee = 0, discountAmount = 0, couponCode,
+  total, customerName, customerEmail,
   phone, address, items = [], orderId, onSuccess, onClose,
 }: Props) {
   const [status, setStatus] = useState<Status>('loading')
@@ -46,7 +49,9 @@ export default function QRPaymentModal({
     ref1: ref1Ref.current,
     amount,
     deliveryFee,
-    total: total ?? amount + deliveryFee,
+    discountAmount,
+    couponCode,
+    total: total ?? amount + deliveryFee - discountAmount,
     customerName,
     customerEmail,
     phone,

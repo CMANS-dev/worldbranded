@@ -37,8 +37,27 @@ export const promoBanner = defineType({
     defineField({
       name: 'link',
       title: 'Link URL',
-      type: 'url',
-      description: 'Optional — link when clicking the banner',
+      type: 'string',
+      description: 'Full banner link (สำหรับ layout: Full Width)',
+    }),
+    defineField({
+      name: 'imageRight',
+      title: 'Right Image (Half Width only)',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'รูปฝั่งขวา — ใช้เฉพาะ layout Half Width (2-column)',
+    }),
+    defineField({
+      name: 'linkLeft',
+      title: 'Left Link (Half Width only)',
+      type: 'string',
+      description: 'Link รูปซ้าย เช่น /shop?category=gift-for-him',
+    }),
+    defineField({
+      name: 'linkRight',
+      title: 'Right Link (Half Width only)',
+      type: 'string',
+      description: 'Link รูปขวา เช่น /shop?category=gift-for-her',
     }),
     defineField({
       name: 'order',

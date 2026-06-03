@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic'
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const [product, allProducts] = await Promise.all([
-    client.fetch(PRODUCT_BY_SLUG_QUERY, { slug: params.id }),
-    client.fetch(ALL_PRODUCTS_QUERY, { category: '' }),
+    client.fetch(PRODUCT_BY_SLUG_QUERY, { slug: params.id }, { cache: 'no-store' }),
+    client.fetch(ALL_PRODUCTS_QUERY, { category: '' }, { cache: 'no-store' }),
   ])
 
   if (!product) notFound()

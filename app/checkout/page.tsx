@@ -57,7 +57,52 @@ export default function CheckoutPage() {
   }, [session])
 
   const DELIVERY_FEE = selectedShipping?.price ?? 0
-  const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0)
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('')
+  const [couponLoading, setCouponLoading] = useState(false)
+  const [couponError, setCouponError] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string
+    type: string
+    discountAmount: number
+    discountLabel: string
+  } | null>(null)
+
+  const discountAmount = appliedCoupon?.discountAmount ?? 0
+  const total = subtotal + (items.length > 0 ? DELIVERY_FEE : 0) - discountAmount
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return
+    setCouponLoading(true)
+    setCouponError('')
+    try {
+      const res = await fetch('/api/coupon/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponInput, subtotal, deliveryFee: DELIVERY_FEE }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setCouponError(data.error)
+        setAppliedCoupon(null)
+      } else {
+        setAppliedCoupon(data)
+        setCouponError('')
+      }
+    } catch {
+      setCouponError('เกิดข้อผิดพลาด กรุณาลองใหม่')
+    } finally {
+      setCouponLoading(false)
+    }
+  }
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponInput('')
+    setCouponError('')
+  }
+
   const [showQR, setShowQR] = useState(false)
   const [orderId] = useState(() => `ORD-${Date.now()}`)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
@@ -415,10 +460,55 @@ export default function CheckoutPage() {
                 <span>Express Delivery</span>
                 <span>฿{items.length > 0 ? DELIVERY_FEE.toLocaleString() : '–'}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-green-600">
+                  <span>{appliedCoupon.discountLabel}</span>
+                  <span>-฿{appliedCoupon.discountAmount.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex justify-between font-medium text-black pt-3 border-t border-gray-100">
                 <span>Total To Pay</span>
-                <span>฿{items.length > 0 ? total.toLocaleString() : '0'}</span>
+                <span>฿{items.length > 0 ? Math.max(0, total).toLocaleString() : '0'}</span>
               </div>
+            </div>
+
+            {/* Coupon input */}
+            <div className="pt-2 border-t border-gray-100">
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-gray-50 px-3 py-2">
+                  <span className="font-inter text-xs text-green-600 font-medium">
+                    ✓ {appliedCoupon.code} — {appliedCoupon.discountLabel}
+                  </span>
+                  <button
+                    onClick={removeCoupon}
+                    className="font-inter text-xs text-gray-400 hover:text-black transition-colors"
+                  >
+                    ลบ
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex gap-2">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError('') }}
+                      onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                      placeholder="โค้ดส่วนลด"
+                      className="flex-1 border-b border-gray-300 font-inter text-sm py-2 outline-none bg-transparent focus:border-black transition-colors placeholder:text-gray-300 uppercase"
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                      className="font-inter text-xs text-white bg-black px-4 py-2 hover:bg-gray-800 transition-colors disabled:opacity-40"
+                    >
+                      {couponLoading ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="font-inter text-xs text-red-500">{couponError}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -502,7 +592,9 @@ export default function CheckoutPage() {
         <QRPaymentModal
           amount={subtotal}
           deliveryFee={items.length > 0 ? DELIVERY_FEE : 0}
-          total={total}
+          discountAmount={discountAmount}
+          couponCode={appliedCoupon?.code}
+          total={Math.max(0, total)}
           customerName={`${getActiveAddress().firstName} ${getActiveAddress().lastName}`}
           phone={form.phone}
           address={{
