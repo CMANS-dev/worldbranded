@@ -17,6 +17,7 @@ export async function POST(req: Request) {
 
     const order = await prisma.order.create({
       data: {
+        id: `ord_${Date.now()}`,
         orderRef,
         transId,
         ref1,
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
         region,
         postal,
         items: typeof items === 'string' ? items : JSON.stringify(items),
+        updatedAt: new Date(),
         paidAt: paidAt ? new Date(paidAt) : null,
       },
     })
